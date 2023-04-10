@@ -3,7 +3,7 @@ package Other
 import org.apache.spark.sql.SparkSession
 
 
-object PlayGround   {
+object PlayGround {
 
   val spark = SparkSession.builder()
     .appName("TestSpark")
