@@ -1,7 +1,7 @@
-import Other.createDataFrame
+import chapter1.FirstDF
 
 object Main extends App {
 
-  createDataFrame
+  FirstDF
 
 }

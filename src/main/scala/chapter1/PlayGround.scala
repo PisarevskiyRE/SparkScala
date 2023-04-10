@@ -1,4 +1,4 @@
-package Other
+package chapter1
 
 import org.apache.spark.sql.SparkSession
 
