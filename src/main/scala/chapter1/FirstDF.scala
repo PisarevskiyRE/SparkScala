@@ -37,6 +37,7 @@ object FirstDF {
     StructField("trendingDate", StringType, false),
   )
 
+  // выделяем спарк контекст в иммутабельную переменную
   val sparkContex = spark.sparkContext
 
   val df = spark.createDataFrame(
