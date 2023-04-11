@@ -1,7 +1,7 @@
-import chapter1.FirstDF
+import chapter1.FromJson2
 
 object Main extends App {
 
-  FirstDF
+  FromJson2
 
 }
