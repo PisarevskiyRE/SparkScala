@@ -1,4 +1,4 @@
-package chapter1
+package chapter2
 
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
