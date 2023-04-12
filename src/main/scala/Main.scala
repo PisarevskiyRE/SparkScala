@@ -1,7 +1,7 @@
-import chapter2.FromJson2
+import chapter2_2.ToFileCSV
 
 object Main extends App {
 
-  FromJson2
+  ToFileCSV
 
 }

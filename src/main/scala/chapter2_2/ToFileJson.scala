@@ -1,16 +1,15 @@
-package chapter2
+package chapter2_2
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
 
-object FromJson {
+object ToFileJson {
 
   val spark = SparkSession
     .builder()
     .appName("TestSpark")
     .master("local")
     .getOrCreate()
-
 
   val restaurantSchema = StructType(Seq(
     StructField("average_cost_for_two", LongType),
@@ -32,27 +31,40 @@ object FromJson {
       )))
   ))
 
+  /*
 
-  val restaurantDF = spark.read
-    .schema(restaurantSchema)
-    .json("src/main/resources/restaurant.json")
+    через монады
 
-  restaurantDF.printSchema
-  restaurantDF.show
+    val restaurnatDF = spark.read
+      .format("json")
+      .schema(restaurantSchema) // либо .option("inferSchema", "true")
+      .option("mode", "failFast") // варианты: failFast, dropMalformed, permissive (default)
+      .option("path", "src/main/resources/restaurant.json")
+      .load
+  */
 
-/*
-  val restaurantDF = spark.read
+  // через кортеж Map(ключ -> свойство)
+  // p.s. можно выделить настройки в отдельную переменную
+  val opt = Map(
+    "inferSchema" -> "true",
+    "mode" -> "failFast",
+    "path" -> "src/main/resources/restaurant.json"
+  )
+
+  val restaurnatDF = spark.read
     .format("json")
-    .option("inferSchema", "true") //спарк составь нам схему, пожалуйста
-    .load("src/main/resources/restaurant.json")
-    //.load("src/main/resources/iris.json")
-*/
+    .options(opt)
+    .load()
 
-/*
-  val restaurantArray: Array[Row] = restaurantDF.take(3) // возвращает итератор по 1
+  restaurnatDF.show()
 
-  //restaurantArray.foreach(x => println(x))
-  restaurantArray.foreach(println)
 
-*/
+  restaurnatDF.write
+    .format("json")
+    .mode("overwrite")
+    .option("path", "src/main/resources/data/file.json")
+    .save
+
+
+
 }
