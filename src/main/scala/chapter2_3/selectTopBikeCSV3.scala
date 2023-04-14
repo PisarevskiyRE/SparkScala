@@ -1,17 +1,16 @@
 package chapter2_3
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions.{col, when}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
 
-object bike_sharing {
+object selectTopBikeCSV3 {
 
   val spark = SparkSession
     .builder()
     .appName("TestSpark")
     .master("local")
     .getOrCreate()
-
 
   val bikeSharingSchema = StructType(Seq(
     StructField("Date", StringType),
@@ -30,7 +29,6 @@ object bike_sharing {
     StructField("FUNCTIONING_DAY", StringType)
   ))
 
-
   val opt = Map(
     "inferSchema" -> "false",
     "header" -> "true",
@@ -44,20 +42,27 @@ object bike_sharing {
     .options(opt)
     .load()
 
-  bikeSharingDF.printSchema()
 
 
-  import spark.implicits._
+  bikeSharingDF
+    .withColumn(
+      "is_workday",
+        when(col("HOLIDAY") === "Holiday" && col("FUNCTIONING_DAY") === "No", 0)
+        .otherwise(1)
+    )
+    .select("HOLIDAY", "FUNCTIONING_DAY", "is_workday").distinct.show
 
-  bikeSharingDF.select(
-    bikeSharingDF.col("Date"),
-    col("Date"),
-    column("Date"),
-    Symbol("Date"),
-    $"Date",
-    expr("Date")
-  ).show()
+/*
 
-  bikeSharingDF.select("Date", "Hour").show()
+результат
++----------+---------------+----------+
+|   HOLIDAY|FUNCTIONING_DAY|is_workday|
++----------+---------------+----------+
+|   Holiday|             No|         0|
+|   Holiday|            Yes|         1|
+|No Holiday|             No|         1|
+|No Holiday|            Yes|         1|
++----------+---------------+----------+
 
+ */
 }
