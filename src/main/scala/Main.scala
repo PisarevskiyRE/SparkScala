@@ -1,7 +1,7 @@
-import chapter2_3.selectTopBikeCSV4
+import chapter2_5.mallCustomersTask1
 
 object Main extends App {
 
-  selectTopBikeCSV4
+  mallCustomersTask1
 
 }
