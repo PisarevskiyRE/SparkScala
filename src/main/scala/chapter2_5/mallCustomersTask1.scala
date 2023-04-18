@@ -1,7 +1,6 @@
 package chapter2_5
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.dsl.expressions._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
@@ -57,7 +56,7 @@ Spending Score (1-100)
   val incomeDF =  mallCustomersWithGroupAgeFilterDF
     .groupBy("Age","Gender")
     .agg(
-      round(avg("Annual Income (k$)"),1).as("avg_income")
+      functions.round(functions.avg("Annual Income (k$)"),1).as("avg_income")
     )
     .orderBy("Gender", "Age")
 

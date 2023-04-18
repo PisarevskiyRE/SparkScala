@@ -1,7 +1,7 @@
-import chapter2_5.mallCustomersTask1
+import chapter2_5.WinterIsComing
 
 object Main extends App {
 
-  mallCustomersTask1
+  WinterIsComing
 
 }
