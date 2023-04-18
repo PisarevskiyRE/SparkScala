@@ -41,50 +41,90 @@ Spending Score (1-100)
     .options(opt)
     .load()
 
+  val isMale: Column = col("gender") === "Male"
+  val hasProperAge: Column = col("age").between(30, 35)
+  val trueAge = col("Age") + 2
 
-  val mallCustomersWithAge: DataFrame = mallCustomers
-    .withColumn("Age", col("Age")+2)
 
-  val mallCustomersWithGroupAge = mallCustomersWithAge
-    .withColumn("age_group", (col("Age") >= 30 && col("Age") < 36).cast(IntegerType))
+  val mallCustomersWithAgeDF: DataFrame = mallCustomers
+    .withColumn("Age", trueAge)
 
-  val mallCustomersWithGroupAgeFilter = mallCustomersWithGroupAge.filter(col("age_group") === 1)
+  val mallCustomersWithGroupAgeDF: DataFrame = mallCustomersWithAgeDF
+    .withColumn("age_group", (hasProperAge).cast(IntegerType))
 
-  val incomeDF =  mallCustomersWithGroupAgeFilter
+  val mallCustomersWithGroupAgeFilterDF = mallCustomersWithGroupAgeDF.filter(col("age_group") === 1)
+
+  val incomeDF =  mallCustomersWithGroupAgeFilterDF
     .groupBy("Age","Gender")
     .agg(
-      functions.round(functions.avg("Annual Income (k$)"),1).as("avg_income")
+      round(avg("Annual Income (k$)"),1).as("avg_income")
     )
     .orderBy("Gender", "Age")
 
+  val incomeWithCodeDF = incomeDF
+    .withColumn(
+      "gender_code",
+      isMale.cast(IntegerType)
+    )
 
-   incomeDF
-     .withColumn("gender_code", (col("Gender") === "Male" ).cast(IntegerType))
+  incomeWithCodeDF
      .write
      .mode(SaveMode.Overwrite)
+     .option("header","true")
      .save("resources/data/customers")
+/*
 
-  /*
-    как то это все не очень выглядит, нельзя это бесконечными монадами писать?
+^- как делать не надо
 
-    или какие-то подзапросы как в обычном sql?
 
- результат
- +---+------+----------+-----------+
-  |Age|Gender|avg_income|gender_code|
-  +---+------+----------+-----------+
-  | 30|Female|      76.0|          0|
-  | 31|Female|      72.5|          0|
-  | 32|Female|      59.4|          0|
-  | 33|Female|      51.7|          0|
-  | 34|Female|      76.8|          0|
-  | 35|Female|      86.0|          0|
-  | 30|  Male|      88.3|          1|
-  | 31|  Male|      28.0|          1|
-  | 32|  Male|     118.0|          1|
-  | 33|  Male|      25.0|          1|
-  | 34|  Male|      99.6|          1|
-  | 35|  Male|      77.5|          1|
-  +---+------+----------+-----------+
+как надо делать ->
+
+def read(
+      opt: Map[String, String],
+      format: String,
+      schema: StructType)
+    : DataFrame = {
+
+    spark.read
+      .format(format)
+      .options(opt)
+      .schema(schema)
+      .load()
+  }
+
+  def withProperAge(df: DataFrame): DataFrame =
+    df.withColumn("Age", col("Age").plus(2))
+
+
+  def withGenderCode(df: DataFrame): DataFrame = {
+    val isFemale = col("Gender") === "Female"
+    val isMale = col("Gender") === "Male"
+
+    df.withColumn("gender_code",
+      when(isMale, 1)
+        .when(isFemale, 0)
+        .otherwise(-1))
+  }
+
+  def extractCustomerGroups(df: DataFrame): DataFrame = {
+    val columns = Seq(col("Gender"), col("Age"))
+    val hasProperAge = col("Age").between(30, 35)
+
+    df
+      .filter(hasProperAge)
+      .groupBy(columns: _*)
+      .agg(round(
+        avg("Annual Income (k$)"),
+        1).as("avg_income"))
+      .orderBy(columns: _*)
+  }
+
+
+  val customersDF = read(opt, format, schema)
+
+  val incomeDF = customersDF
+    .transform(withProperAge)
+    .transform(extractCustomerGroups)
+    .transform(withGenderCode)
    */
 }
