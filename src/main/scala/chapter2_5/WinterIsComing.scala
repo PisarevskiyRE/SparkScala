@@ -1,10 +1,9 @@
 package chapter2_5
 
-import org.apache.spark.sql._
-import org.apache.spark.sql.catalyst.dsl.expressions._
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession, functions}
 
 object WinterIsComing {
 
@@ -15,25 +14,31 @@ object WinterIsComing {
     .getOrCreate()
 
 
- val season1: DataFrame = spark.read
+  val season1: DataFrame = spark.read
     .option("inferSchema", "true")
     .csv("src/main/resources/subtitles_s1.json")
 
- val season2: DataFrame = spark.read
+  val season2: DataFrame = spark.read
     .option("inferSchema", "true")
     .csv("src/main/resources/subtitles_s2.json")
 
   import spark.implicits._
-  import spark.sqlContext.implicits._
 
-  // читаю везде пишут должно работать $"_c0" вместо col("_c0"), не знаю в чем дело у меня на $ горит и ничего не может вывести
+  /*
+    чтение
+    транформация (трансформации выделять в отдельные функции)
+    запись
+   */
+
+
+
 
   val season1DS =
-      season1.select(explode(split(col("_c0"), "\\W+")).as("w_s1"))
-        .filter(col("w_s1") =!= "")
-        .groupBy(col("w_s1"))
+      season1.select(explode(split($"_c0", "\\W+")).as("w_s1"))
+        .filter($"w_s1" =!= "")
+        .groupBy($"w_s1")
         .agg(
-          functions.count("w_s1").as("cnt_s1")
+          count($"w_s1").as("cnt_s1")
         )
         .orderBy(desc("cnt_s1"))
         .withColumn(
