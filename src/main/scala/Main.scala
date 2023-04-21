@@ -1,7 +1,7 @@
-import chapter2_5.WinterIsComingTryFix
+import chapter3_2.CustomersWithNullsDS
 
 object Main extends App {
 
-  WinterIsComingTryFix
+  CustomersWithNullsDS
 
 }
