@@ -8,9 +8,14 @@ lazy val root = (project in file("."))
   )
 
 lazy val sparkVersion = "3.3.2"
+lazy val circeVersion    = "0.14.5"
+
 
 libraryDependencies ++= Seq(
 
   "org.apache.spark" %% "spark-core" % sparkVersion,
-  "org.apache.spark" %% "spark-sql" % sparkVersion
+  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "io.circe" %% "circe-core" % circeVersion,
+  "io.circe" %% "circe-generic" % circeVersion,
+  "io.circe" %% "circe-parser" % circeVersion,
 )
