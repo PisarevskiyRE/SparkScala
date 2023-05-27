@@ -4,10 +4,13 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import io.circe.parser._
 import io.circe.generic.auto._
+import org.apache.log4j.{Level, Logger}
 
 import scala.io.Source
 
 object AmazonProducts extends App{
+  Logger.getLogger("org").setLevel(Level.ERROR)
+
   val spark = SparkSession.builder()
     .appName("RDDs")
     .config("spark.master", "local[*]")
@@ -24,13 +27,10 @@ object AmazonProducts extends App{
                       number_of_reviews: Option[Int]
                     )
 
-  def readJson(filename: String) =
-    Source
-      .fromFile(filename)
-      .getLines()
-      .toList
 
-  val jsonRDD: RDD[String] = sc.parallelize(readJson("src/main/resources/amazon_products.json"))
+
+  val jsonRDD: RDD[String] =  sc.textFile("src/main/resources/amazon_products.json")
+
 
   val productsRDD: RDD[Product] = jsonRDD.flatMap { json =>
     decode[Product](json).toOption
@@ -47,4 +47,6 @@ object AmazonProducts extends App{
  * Product(Some(eac7efa5dbdbjghjs823os7wbcad504464),Some(Faller 140431),Some(Faller),Some(£73.67),Some(7 old),Some(4))
  * ...
  */
+
+
 }

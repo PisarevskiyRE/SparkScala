@@ -167,13 +167,13 @@ object AiJobsIndustry extends App {
   val jobDS: Dataset[Job] = JobsDF.as[Job]
   val companyDS = companyDF.as[Company]
 
-  val jobTotalDS = jobDS
+  val jobTotalDS: DataFrame = jobDS
     .groupBy("JobId")
     .agg(
       sum("CompanyReviews").as("TotalCompanyReviews")
     )
 
-  val jobMaxMinDS = jobTotalDS
+  val jobMaxMinDS: Dataset[Row] = jobTotalDS
     .select(
       $"JobId",
       $"TotalCompanyReviews",
