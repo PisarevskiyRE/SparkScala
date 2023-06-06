@@ -1,11 +1,11 @@
 package chapter6_4
 
-import org.apache.spark.HashPartitioner
+import org.apache.spark.{HashPartitioner, Partitioner}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 object UserScores extends App{
-  import spark.implicits._
+
 
   val spark = SparkSession
     .builder()
@@ -54,7 +54,7 @@ object UserScores extends App{
    * 3
    */
 
-  val scoresPartitioner = {
+  val scoresPartitioner: Partitioner = {
     usersRDD.partitioner match {
       case None => new HashPartitioner(usersRDD.getNumPartitions)
       case Some(partitioner) => partitioner
