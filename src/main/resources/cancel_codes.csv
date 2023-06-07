@@ -1,0 +1,9 @@
+id,is_cancelled,confirmation
+0,no,call
+1,no,none
+2,no,sms
+3,no,email
+4,yes,email
+5,yes,call
+6,yes,sms
+7,yes,none
