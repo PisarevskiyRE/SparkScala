@@ -1,6 +1,5 @@
 package chapter6_5
 
-import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 
@@ -12,9 +11,7 @@ object TransactionsDF extends App{
     .master("local[*]")
     .getOrCreate()
 
-
   spark.conf.set("spark.sql.autoBroadcastJoinThreshold", -1)
-
 
   def read(file: String) = {
     spark.read
@@ -24,17 +21,38 @@ object TransactionsDF extends App{
   }
 
   val transactionsDF: DataFrame = read("src/main/resources/transactions.csv")
-
   val codesDF: DataFrame = read("src/main/resources/country_codes.csv")
 
   import spark.implicits._
 
+  /**
+   * Решил что если четко задан критерий
+   * то будет уместно фильтровать по коду как литерал
+   * не прибегая к Join и бродкасту
+   */
 
-  val UnitedKingdomId: Int = codesDF
-    .select($"CountryCode")
-    .where($"Country" === "United Kingdom")
-    .first()
-    .getInt(0)
+  def getCountryId(country: String, df: DataFrame): Int = {
+    df.select($"CountryCode")
+      .where($"Country" === country)
+      .first()
+      .getInt(0)
+  }
+
+  val unitedKingdomId: Int = getCountryId("United Kingdom", codesDF)
+
+
+  def filterByDate(date: String)(df: DataFrame): DataFrame ={
+    df.filter($"Date" === date)
+  }
+
+  def filterByCountryCode(countryCode: Int)(df: DataFrame): DataFrame = {
+    df.filter($"CountryCode" === countryCode)
+  }
+
+  def filterByQuantity(quantity: Int)(df: DataFrame): DataFrame = {
+    df.filter($"Quantity" > quantity)
+  }
+
 
   val transactionsOnDateDF = transactionsDF
     .select(
@@ -43,44 +61,35 @@ object TransactionsDF extends App{
       $"CountryCode",
       $"ProductName",
       $"Quantity")
-    .where($"Date" === "2018-12-01"
-      && $"CountryCode" === UnitedKingdomId
-      && $"Quantity" >= 0
-    )
+    .transform(filterByDate("2018-12-01"))
+    .transform(filterByCountryCode(unitedKingdomId))
+    .transform(filterByQuantity(0))
 
-
-
-  val mostFrequentProduct = transactionsOnDateDF.groupBy("ProductName")
+  val mostFrequentProduct = transactionsOnDateDF
+    .groupBy("ProductName")
     .agg(sum("Quantity").alias("TotalQuantity"))
     .orderBy(desc("TotalQuantity"))
-    .select("ProductName")
-//    .first()
-//    .getString(0)
 
-  val avgItemsPerTransaction = transactionsOnDateDF.groupBy("TransactionNo")
+  val avgItemsPerTransaction = transactionsOnDateDF
+    .groupBy("TransactionNo")
     .agg(sum("Quantity").alias("TotalQuantity"))
     .agg(avg("TotalQuantity").alias("AvgItemsPerTransaction"))
-//    .first()
-//    .getInt(0)
 
+  val mostFrequentProductResult = mostFrequentProduct.first().getString(0)
+  val avgItemsPerTransactionResult = avgItemsPerTransaction.first().getDouble(0)
 
-
-  println( mostFrequentProduct.first().getString(0))
-  println( avgItemsPerTransaction.first().getDouble(0))
-
+  println(s"Наиболее часто покупаемый товар -> $mostFrequentProductResult")
+  println(s"В среднем покупают за транзакцию -> $avgItemsPerTransactionResult.round")
 
   mostFrequentProduct.explain()
   avgItemsPerTransaction.explain()
 
-
   /**
    * правильный ответ
-   * Namaste Swagat Incense	600
    *
-   * 199
-   *
+   * -> Namaste Swagat Incense
+   * -> 200
    */
-
 
   System.in.read()
 }
