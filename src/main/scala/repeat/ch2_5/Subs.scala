@@ -74,6 +74,6 @@ object Subs extends App {
   joinedDf.write
     .mode(SaveMode.Overwrite)
     .option("header", "true")
-    .save("resources/data/wordcount")
+    .save("src/main/resources/data/wordcount")
 
 }
